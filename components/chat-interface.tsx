@@ -1,23 +1,96 @@
 "use client"
-import { useChat } from "@ai-sdk/react"
+import { useState } from "react"
+import type React from "react"
+
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Send, TrendingUp, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+interface Message {
+  id: string
+  role: "user" | "assistant"
+  content: string
+  createdAt?: Date
+}
+
 export function ChatInterface() {
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
-    api: "/api/chat",
-    initialMessages: [
-      {
-        id: "1",
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "1",
+      role: "assistant",
+      content:
+        "Olá! Sou seu assistente financeiro especializado em análise de tendências de bolsa. Posso ajudá-lo a analisar ações, entender movimentos do mercado e explicar conceitos financeiros. Como posso ajudá-lo hoje?",
+      createdAt: new Date(),
+    },
+  ])
+  const [input, setInput] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<Error | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || isLoading) return
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: "user",
+      content: input.trim(),
+      createdAt: new Date(),
+    }
+
+    setMessages((prev) => [...prev, userMessage])
+    setInput("")
+    setIsLoading(true)
+    setError(null)
+
+    try {
+      console.log("[v0] Enviando mensagem para API:", userMessage.content)
+
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map((msg) => ({
+            role: msg.role,
+            content: msg.content,
+          })),
+        }),
+      })
+
+      console.log("[v0] Resposta da API status:", response.status)
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        console.log("[v0] Erro da API:", errorData)
+        throw new Error(errorData.error || `Erro ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      console.log("[v0] Dados recebidos da API:", data)
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
         role: "assistant",
-        content:
-          "Olá! Sou seu assistente financeiro especializado em análise de tendências de bolsa. Posso ajudá-lo a analisar ações, entender movimentos do mercado e explicar conceitos financeiros. Como posso ajudá-lo hoje?",
-      },
-    ],
-  })
+        content: data.message || data.content || "Desculpe, não consegui processar sua mensagem.",
+        createdAt: new Date(),
+      }
+
+      setMessages((prev) => [...prev, assistantMessage])
+    } catch (err) {
+      console.error("[v0] Erro no chat:", err)
+      setError(err as Error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInput(e.target.value)
+  }
 
   return (
     <div className="max-w-4xl mx-auto">

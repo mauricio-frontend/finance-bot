@@ -1,4 +1,4 @@
-import { streamText, tool } from "ai"
+import { generateText, tool } from "ai"
 import { cohere } from "@ai-sdk/cohere"
 import { z } from "zod"
 
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       )
     }
 
-    const result = await streamText({
+    const result = await generateText({
       model: cohere("command-r-plus"),
       messages,
       system: `Você é um assistente financeiro especializado em análise de tendências de bolsa de valores e mercado financeiro. 
@@ -74,7 +74,16 @@ export async function POST(req: Request) {
       },
     })
 
-    return result.toDataStreamResponse()
+    return new Response(
+      JSON.stringify({
+        message: result.text,
+        toolInvocations: result.toolCalls || [],
+      }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      },
+    )
   } catch (error) {
     console.error("Chat API error:", error)
     return new Response(JSON.stringify({ error: "Erro interno do servidor" }), {
