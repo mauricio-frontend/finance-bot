@@ -1,12 +1,15 @@
-import { generateText, tool } from "ai"
+import { generateText } from "ai"
 import { cohere } from "@ai-sdk/cohere"
-import { z } from "zod"
 
 export async function POST(req: Request) {
   try {
     const { messages } = await req.json()
 
+    console.log("[v0] API Chat - Mensagens recebidas:", messages?.length || 0)
+    console.log("[v0] API Chat - COHERE_API_KEY configurada:", !!process.env.COHERE_API_KEY)
+
     if (!process.env.COHERE_API_KEY) {
+      console.log("[v0] API Chat - Erro: COHERE_API_KEY não configurada")
       return new Response(
         JSON.stringify({
           error:
@@ -15,6 +18,8 @@ export async function POST(req: Request) {
         { status: 500, headers: { "Content-Type": "application/json" } },
       )
     }
+
+    console.log("[v0] API Chat - Iniciando generateText...")
 
     const result = await generateText({
       model: cohere("command-r-plus"),
@@ -26,58 +31,49 @@ export async function POST(req: Request) {
       - Explicar conceitos financeiros de forma clara
       - Fornecer insights sobre dados de mercado
       - Responder perguntas sobre investimentos e economia
+      - Usar ferramentas disponíveis para buscar cotações atuais quando mencionados símbolos de ações
       
-      Quando o usuário perguntar sobre uma ação específica, use a ferramenta getStockQuote para obter dados em tempo real.
+      Quando o usuário mencionar símbolos de ações (como AAPL, GOOGL, TSLA, etc.), use a ferramenta getStockQuote para obter dados atuais.
+      
       Sempre seja preciso, profissional e baseie suas respostas em dados quando possível.
       Responda em português brasileiro.`,
       temperature: 0.7,
       maxTokens: 1000,
       tools: {
-        getStockQuote: tool({
-          description: "Obter cotação atual de uma ação pelo símbolo (ex: AAPL, GOOGL, TSLA)",
-          parameters: z.object({
-            symbol: z.string().describe("Símbolo da ação (ex: AAPL, GOOGL, TSLA)"),
-          }),
-          execute: async ({ symbol }) => {
+        getStockQuote: {
+          description: "Busca cotação atual de uma ação pelo símbolo",
+          parameters: {
+            type: "object",
+            properties: {
+              symbol: {
+                type: "string",
+                description: "Símbolo da ação (ex: AAPL, GOOGL, TSLA)",
+              },
+            },
+            required: ["symbol"],
+          },
+          execute: async ({ symbol }: { symbol: string }) => {
             try {
-              const response = await fetch(
-                `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/stock?symbol=${symbol}&function=GLOBAL_QUOTE`,
-              )
-
-              if (!response.ok) {
-                return { error: "Erro ao buscar dados da ação" }
-              }
-
+              console.log("[v0] API Chat - Buscando cotação para:", symbol)
+              const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+              const response = await fetch(`${baseUrl}/api/stock?symbol=${symbol}`)
               const data = await response.json()
-              const quote = data["Global Quote"]
-
-              if (!quote) {
-                return { error: "Ação não encontrada" }
-              }
-
-              return {
-                symbol: quote["01. symbol"],
-                price: quote["05. price"],
-                change: quote["09. change"],
-                changePercent: quote["10. change percent"],
-                high: quote["03. high"],
-                low: quote["04. low"],
-                open: quote["02. open"],
-                previousClose: quote["08. previous close"],
-                volume: quote["06. volume"],
-              }
+              console.log("[v0] API Chat - Cotação obtida:", data)
+              return data
             } catch (error) {
-              return { error: "Erro ao buscar cotação da ação" }
+              console.error("[v0] API Chat - Erro ao buscar cotação:", error)
+              return { error: "Não foi possível obter a cotação no momento" }
             }
           },
-        }),
+        },
       },
     })
+
+    console.log("[v0] API Chat - Texto gerado com sucesso:", !!result.text)
 
     return new Response(
       JSON.stringify({
         message: result.text,
-        toolInvocations: result.toolCalls || [],
       }),
       {
         status: 200,
@@ -85,10 +81,19 @@ export async function POST(req: Request) {
       },
     )
   } catch (error) {
-    console.error("Chat API error:", error)
-    return new Response(JSON.stringify({ error: "Erro interno do servidor" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    })
+    console.error("[v0] API Chat - Erro detalhado:", error)
+    console.error("[v0] API Chat - Erro message:", error?.message)
+    console.error("[v0] API Chat - Erro stack:", error?.stack)
+
+    return new Response(
+      JSON.stringify({
+        error: "Erro interno do servidor",
+        details: error?.message || "Erro desconhecido",
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      },
+    )
   }
 }
