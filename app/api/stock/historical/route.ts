@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
   const symbol = searchParams.get("symbol")
   const interval = searchParams.get("interval") || "daily"
+  const outputsize = searchParams.get("outputsize")
+  const month = searchParams.get("month")
 
   if (!ALPHA_VANTAGE_API_KEY) {
     return NextResponse.json({ error: "ALPHA_VANTAGE_API_KEY não configurada" }, { status: 500 })
@@ -18,10 +20,18 @@ export async function GET(request: NextRequest) {
 
   try {
     let functionType = "TIME_SERIES_DAILY"
+    const intradayIntervals = ["1min", "5min", "15min", "30min", "60min"]
+    const isIntraday = intradayIntervals.includes(interval)
+    if (isIntraday) functionType = "TIME_SERIES_INTRADAY"
     if (interval === "weekly") functionType = "TIME_SERIES_WEEKLY"
     if (interval === "monthly") functionType = "TIME_SERIES_MONTHLY"
 
-    const url = `${BASE_URL}?function=${functionType}&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`
+    let url = `${BASE_URL}?function=${functionType}&symbol=${encodeURIComponent(symbol as string)}&apikey=${ALPHA_VANTAGE_API_KEY}`
+    if (isIntraday) {
+      url += `&interval=${encodeURIComponent(interval)}`
+      if (outputsize) url += `&outputsize=${encodeURIComponent(outputsize)}`
+      if (month) url += `&month=${encodeURIComponent(month)}`
+    }
     const response = await fetch(url)
 
     if (!response.ok) {

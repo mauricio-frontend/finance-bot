@@ -5,19 +5,36 @@ const BASE_URL = "https://www.alphavantage.co/query"
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams
-  const symbol = searchParams.get("symbol")
   const function_type = searchParams.get("function") || "GLOBAL_QUOTE"
+  const symbol = searchParams.get("symbol")
+  const keywords = searchParams.get("keywords")
+  const datatype = searchParams.get("datatype")
 
   if (!ALPHA_VANTAGE_API_KEY) {
     return NextResponse.json({ error: "ALPHA_VANTAGE_API_KEY não configurada" }, { status: 500 })
   }
 
-  if (!symbol) {
-    return NextResponse.json({ error: "Símbolo da ação é obrigatório" }, { status: 400 })
+  // Validate required parameters based on function
+  if (function_type === "SYMBOL_SEARCH") {
+    if (!keywords) {
+      return NextResponse.json({ error: "Parâmetro 'keywords' é obrigatório para SYMBOL_SEARCH" }, { status: 400 })
+    }
+  } else {
+    if (!symbol) {
+      return NextResponse.json({ error: "Símbolo da ação é obrigatório" }, { status: 400 })
+    }
   }
 
   try {
-    const url = `${BASE_URL}?function=${function_type}&symbol=${symbol}&apikey=${ALPHA_VANTAGE_API_KEY}`
+    let url = `${BASE_URL}?function=${function_type}&apikey=${ALPHA_VANTAGE_API_KEY}`
+    if (function_type === "SYMBOL_SEARCH") {
+      url += `&keywords=${encodeURIComponent(keywords as string)}`
+    } else {
+      url += `&symbol=${encodeURIComponent(symbol as string)}`
+    }
+    if (datatype) {
+      url += `&datatype=${encodeURIComponent(datatype)}`
+    }
     const response = await fetch(url)
 
     if (!response.ok) {
