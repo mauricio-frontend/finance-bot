@@ -220,8 +220,6 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 ## 🔗 Links Úteis
 
 - **[FinanceBot Live](https://my-finance-bot.vercel.app/)**
-- **[Vercel Dashboard](https://vercel.com/mmadrugadeazevedos-projects/v0-next-js-chatbot-cohere)**
-- **[v0.app Project](https://v0.app/chat/projects/M1MhvXYBcz7)**
 - **[Cohere AI](https://cohere.ai/)**
 - **[Alpha Vantage](https://www.alphavantage.co/)**
 
