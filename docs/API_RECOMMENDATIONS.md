@@ -2,7 +2,7 @@
 
 ## 🤖 **Modelos Cohere - Informações Mais Atualizadas**
 
-### **🏆 Modelo Principal Recomendado: `command-r-plus`**
+### **🏆 Modelo Principal Recomendado: `command-r-plus-08-2024`**
 - **Atualização**: Dados até 2024
 - **Performance**: 128K contexto, excelente compreensão
 - **Ferramentas**: Suporte robusto a function calling
@@ -12,10 +12,10 @@
 
 | Modelo | Atualização | Uso Recomendado | Vantagens |
 |--------|-------------|-----------------|-----------|
-| `command-r-plus` | 2024 | Principal | Melhor performance, dados atualizados |
-| `command-r` | 2024 | Fallback | Estável, confiável |
-| `command-light` | 2024 | Respostas rápidas | Mais leve, rápido |
-| `command-nightly` | 2024+ | Experimental | Mais atualizado, instável |
+| `command-r-plus-08-2024` | 2024 | Principal | Melhor performance, dados atualizados |
+| `command-r-08-2024` | 2024 | Fallback | Estável, confiável |
+| `command-light-08-2024` | 2024 | Respostas rápidas | Mais leve, rápido |
+| `command-nightly-08-2024` | 2024+ | Experimental | Mais atualizado, instável |
 
 ### **📈 Configurações de Temperatura por Tipo**
 

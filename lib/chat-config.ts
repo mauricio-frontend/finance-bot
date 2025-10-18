@@ -10,18 +10,18 @@ export const API_CONFIG = {
 
 export const COHERE_MODELS = {
   // Modelo principal - mais atualizado e robusto
-  PRIMARY: "command-r-plus",
+  PRIMARY: "command-r-plus-08-2024",
   
   // Fallback - modelo alternativo estável
-  FALLBACK: "command-r",
+  FALLBACK: "command-r-08-2024",
   
   // Modelos alternativos para diferentes cenários
-  LIGHT: "command-light", // Mais rápido, dados atualizados
-  NIGHTLY: "command-nightly", // Versão experimental mais recente
+  LIGHT: "command-light-08-2024", // Mais rápido, dados atualizados
+  NIGHTLY: "command-nightly-08-2024", // Versão experimental mais recente
   
   // Modelos específicos para análise financeira
-  FINANCIAL: "command-r-plus", // Melhor para análise financeira
-  REAL_TIME: "command-r-plus", // Melhor para dados em tempo real
+  FINANCIAL: "command-r-plus-08-2024", // Melhor para análise financeira
+  REAL_TIME: "command-r-plus-08-2024", // Melhor para dados em tempo real
 } as const;
 
 export const GENERATION_CONFIG = {

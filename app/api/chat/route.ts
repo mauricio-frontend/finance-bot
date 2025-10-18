@@ -164,7 +164,7 @@ export async function POST(req: Request) {
 Pergunta do usuário: ${lastUser?.content ?? "(indisponível)"}`;
     }
 
-    // Third attempt: try a different Cohere model in case command-r-plus is constrained
+    // Third attempt: try a different Cohere model in case command-r-plus-08-2024 is constrained
     if (!finalText) {
       try {
         const lastUser = findLastUserMessage(messages);

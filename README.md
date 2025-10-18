@@ -43,7 +43,7 @@ O FinanceBot é um assistente financeiro inteligente especializado em análise d
 - **shadcn/ui**: Componentes de interface elegantes
 
 ### **Backend & APIs**
-- **Cohere AI**: Modelo `command-r-plus` para processamento de linguagem natural
+- **Cohere AI**: Modelo `command-r-plus-08-2024` para processamento de linguagem natural
 - **Alpha Vantage**: Dados financeiros em tempo real
 - **Next.js API Routes**: Endpoints para integração das APIs
 
